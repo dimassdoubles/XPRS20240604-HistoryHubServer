@@ -1,29 +1,29 @@
+import { createClient } from '@supabase/supabase-js';
+import {sha512} from "js-sha512";
 require('dotenv').config();
 
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
 const express = require('express');
-const bodyParser = require('body-parser');
-
 const app = express();
+
 const PORT = process.env.PORT || 3000;
+let SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 
-// Middleware untuk parsing JSON
-app.use(bodyParser.json());
+app.post('/pay', async (req, res) => {
 
-// Endpoint untuk menangani notifikasi Midtrans
-app.post('/update-payment-status', (req, res) => {
-  // Akses data notifikasi dari body request
-  const notification = req.body;
+  const body = req.body;
+  const orderId = body["order_id"];
+  const grossAmount = body["gross_amount"];
+  let trxSignature = sha512(orderId + grossAmount + SERVER_KEY);
 
-  console.log('Received Midtrans Notification:', notification);
+  // if (body["signature_key"] === trxSignature) {
+    const { data, error } = await supabase.rpc('create_payment', {p_notif_body: JSON.stringify(body)});
+    console.log(data);
+    console.log(error);
+  // }
 
-  // Verifikasi notifikasi (opsional, tergantung kebutuhan)
-  // ...
-
-  // Lakukan tindakan yang diperlukan berdasarkan notifikasi
-  // ...
-
-  // Kirim respon 200 OK ke Midtrans
-  res.status(200).send('OK');
+  res.status(200).send(data);
 });
 
 // Menjalankan server
