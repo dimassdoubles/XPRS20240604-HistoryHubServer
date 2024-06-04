@@ -27,9 +27,12 @@ export default async function handler(req, res) {
   
     console.log(data);
     console.log(error);
+    
+    return res.send(`Data: ${data}, Error: ${error}`);
   } else {
     console.log(`signature key tidak sesuai, ${validSignature} != ${body.signature_key}`);
-  }
 
-  return res.send(`Data: ${data}, Error: ${error}`);
+    return res.send('signature_key tidak sesuai');
+  }
+  ;
 }
