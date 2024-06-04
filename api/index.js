@@ -14,11 +14,23 @@ export default async function handler(req, res) {
   const grossAmount = body["gross_amount"];
   let trxSignature = sha512(orderId + grossAmount + SERVER_KEY);
 
-  // if (body["signature_key"] === trxSignature) {
-    const { data, error } = await supabase.rpc('create_payment', {p_notif_body: JSON.stringify(body)});
+  if (body["signature_key"] === trxSignature) {
+    console.log('create payment');
+    
+    const { data, error } = await supabase.rpc('create_payment',
+    {
+      p_payment_id: body.transaction_id,
+      p_order_id: body.order_id,
+      p_payment_type: body.p_payment_type,
+      p_transaction_code: body.transaction_code,
+      p_notif_body: JSON.stringify(body)
+    });
+  
     console.log(data);
     console.log(error);
-  // }
+  } else {
+    console.log('signature key tidak sesuai');
+  }
 
   return res.send(`Data: ${data}, Error: ${error}`);
 }
