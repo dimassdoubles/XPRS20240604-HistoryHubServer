@@ -14,11 +14,8 @@ export default async function handler(req, res) {
 
   let validSignature = sha512(body.order_id + body.status_code + body.gross_amount + SERVER_KEY);
 
-  if (body.signature_key === validSignature || true) {
+  if (body.signature_key === validSignature) {
     console.log('create payment');
-
-     
-
     const { data, error } = await supabase.rpc('create_payment',
     {
       p_payment_id: body.transaction_id,
