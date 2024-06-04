@@ -10,13 +10,11 @@ let SERVER_KEY = process.env.MIDTRANS_SERVER_KEY;
 export default async function handler(req, res) {
   const { body } = req;
 
-  const orderId = body["order_id"];
-  const grossAmount = body["gross_amount"];
-  let trxSignature = sha512(orderId + grossAmount + SERVER_KEY);
+  let validSignature = sha512(body.order_id + body.status_code + body.gross_amount + SERVER_KEY);
 
-  if (body["signature_key"] === trxSignature) {
+  if (body.signature_key === validSignature) {
     console.log('create payment');
-    
+
     const { data, error } = await supabase.rpc('create_payment',
     {
       p_payment_id: body.transaction_id,
@@ -29,7 +27,7 @@ export default async function handler(req, res) {
     console.log(data);
     console.log(error);
   } else {
-    console.log('signature key tidak sesuai');
+    console.log(`signature key tidak sesuai, ${trxSignature} != ${body.signature_key}`);
   }
 
   return res.send(`Data: ${data}, Error: ${error}`);
